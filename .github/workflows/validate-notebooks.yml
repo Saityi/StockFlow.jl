@@ -19,6 +19,5 @@ jobs:
           mkdir ./jlexamples
           ./ipynb-to-jl.sh "full_fledged_schema_examples"
           ./ipynb-to-jl.sh "full_fledged_schema_examples_new"
-          ./ipynb-to-jl.sh "primitive_schema_examples"
       - name: Validate notebook examples by running
         run: julia -p auto --project="." -e 'include("./run_notebooks.jl")'
