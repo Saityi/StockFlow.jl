@@ -1,3 +1,4 @@
+# TODO: When AlgebraicRewriting that is compatible with latest CatLab is released, uncomment this module & code that consumes it. I.e., undo 4f432886770878752095dcafb61b03abddef1be6
 # module Rewrite
 #
 # export sfrewrite, @rewrite
