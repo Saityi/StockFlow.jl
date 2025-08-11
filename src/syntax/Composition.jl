@@ -3,11 +3,9 @@ export sfcompose, @compose
 
 using ...StockFlow
 using ..Syntax
-using Catlab.CategoricalAlgebra
-using Catlab.WiringDiagrams
+using Catlab
 
 import ..Syntax: create_foot
-import Catlab: UntypedRelationDiagram
 
 using MLStyle
 

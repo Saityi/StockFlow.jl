@@ -1,5 +1,4 @@
-using Catlab.CategoricalAlgebra
-using Catlab.Graphics.Graphviz: Attributes, Node, Edge, Digraph
+using Catlab.Graphics.Graphviz
 using Base.Iterators: flatten
 using StatsBase
 

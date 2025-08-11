@@ -3,9 +3,7 @@ using StockFlow.Syntax.Stratification
 using StockFlow.Syntax.Stratification: interpret_stratification_standard_notation
 using StockFlow.Syntax: NothingFunction, DSLArgument, unwrap_expression, substitute_symbols
 
-using Catlab.WiringDiagrams
-using Catlab.ACSets
-using Catlab.CategoricalAlgebra
+using Catlab
 
 
 
@@ -13,41 +11,41 @@ using Catlab.CategoricalAlgebra
 @testset "Pullback computed in standard way is equal to DSL pullbacks" begin
 
 
-    l_type = @stock_and_flow begin 
+    l_type = @stock_and_flow begin
         :stocks
         pop
-        
+
         :parameters
         μ
         δ
         rFstOrder
         rage
-        
+
         :dynamic_variables
         v_aging = pop * rage
         v_fstOrder = pop * rFstOrder
         v_birth = N * μ
         v_death = pop * δ
-        
+
         :flows
         pop => f_aging(v_aging) => pop
         pop => f_fstOrder(v_fstOrder) => pop
         CLOUD => f_birth(v_birth) => pop
         pop => f_death(v_death) => CLOUD
-        
+
         :sums
         N = [pop]
-        
+
     end;
     l_type_noatts = map(l_type, Name=NothingFunction, Op=NothingFunction, Position=NothingFunction);
-    
-    
+
+
     WeightModel = @stock_and_flow begin
         :stocks
         NormalWeight
         OverWeight
         Obese
-        
+
         :parameters
         μ
         δw
@@ -55,7 +53,7 @@ using Catlab.CategoricalAlgebra
         ro
         δo
         rage
-        
+
         :dynamic_variables
         v_NewBorn = N * μ
         v_DeathNormalWeight = NormalWeight * δw
@@ -66,31 +64,31 @@ using Catlab.CategoricalAlgebra
         v_idNW = NormalWeight * rage
         v_idOW = OverWeight * rage
         v_idOb = Obese * rage
-        
+
         :flows
         CLOUD => f_NewBorn(v_NewBorn) => NormalWeight
         NormalWeight => f_DeathNormalWeight(v_DeathNormalWeight) => CLOUD
         NormalWeight => f_BecomingOverWeight(v_BecomingOverWeight) => OverWeight
         OverWeight => f_DeathOverWeight(v_DeathOverWeight) => CLOUD
-        
+
         OverWeight => f_BecomingObese(v_BecomingObese) => Obese
         Obese => f_DeathObese(v_DeathObese) => CLOUD
         NormalWeight => f_idNW(v_idNW) => NormalWeight
         OverWeight => f_idOW(v_idOW) => OverWeight
         Obese => f_idOb(v_idOb) => Obese
-        
+
         :sums
         N = [NormalWeight, OverWeight, Obese]
-        
+
     end;
-    
-    
+
+
     ageWeightModel = @stock_and_flow begin
         :stocks
         Child
         Adult
         Senior
-        
+
         :parameters
         μ
         δC
@@ -99,7 +97,7 @@ using Catlab.CategoricalAlgebra
         rageCA
         rageAS
         r
-        
+
         :dynamic_variables
         v_NB = N * μ
         v_DeathC = Child * δC
@@ -110,7 +108,7 @@ using Catlab.CategoricalAlgebra
         v_agingAS = Adult * rageAS
         v_DeathS = Senior * δS
         v_idS = Senior * r
-        
+
         :flows
         CLOUD => f_NB(v_NB) => Child
         Child => f_idC(v_idC) => Child
@@ -121,12 +119,12 @@ using Catlab.CategoricalAlgebra
         Adult => f_agingAS(v_agingAS) => Senior
         Senior => f_idS(v_idS) => Senior
         Senior => f_DeathS(v_DeathS) => CLOUD
-        
+
         :sums
         N = [Child, Adult, Senior]
-            
+
     end;
-    
+
     begin
         s, = parts(l_type, :S)
         N, = parts(l_type, :SV)
@@ -140,13 +138,13 @@ using Catlab.CategoricalAlgebra
         p_μ, p_δ, p_rfstOrder, p_rage = parts(l_type, :P)
         lpv_aging2, lpv_fstorder2, lpv_birth2, lpv_death2 = parts(l_type, :LPV)
     end;
-    
+
     typed_WeightModel=ACSetTransformation(WeightModel, l_type_noatts,
       S = [s,s,s],
       SV = [N],
-      LS = [lsn,lsn,lsn],   
-      F = [f_birth, f_death, f_fstorder, f_death, f_fstorder, f_death, f_aging, f_aging, f_aging],    
-      I = [i_birth, i_aging, i_fstorder, i_aging, i_fstorder, i_aging], 
+      LS = [lsn,lsn,lsn],
+      F = [f_birth, f_death, f_fstorder, f_death, f_fstorder, f_death, f_aging, f_aging, f_aging],
+      I = [i_birth, i_aging, i_fstorder, i_aging, i_fstorder, i_aging],
       O = [o_death, o_fstorder, o_aging, o_death, o_fstorder, o_aging, o_death, o_aging],
       V = [v_birth, v_death, v_fstorder, v_death, v_fstorder, v_death, v_aging, v_aging, v_aging],
       LV = [lv_death1, lv_fstorder1, lv_death1, lv_fstorder1, lv_death1, lv_aging1, lv_aging1, lv_aging1],
@@ -156,15 +154,15 @@ using Catlab.CategoricalAlgebra
       Name=NothingFunction, Op=NothingFunction, Position=NothingFunction
     );
     @assert is_natural(typed_WeightModel);
-    
-    
-    
+
+
+
     typed_ageWeightModel=ACSetTransformation(ageWeightModel, l_type_noatts,
       S = [s,s,s],
       SV = [N],
-      LS = [lsn,lsn,lsn],   
-      F = [f_birth, f_fstorder, f_death, f_aging, f_fstorder, f_death, f_aging, f_fstorder, f_death],    
-      I = [i_birth, i_fstorder, i_aging, i_fstorder, i_aging, i_fstorder], 
+      LS = [lsn,lsn,lsn],
+      F = [f_birth, f_fstorder, f_death, f_aging, f_fstorder, f_death, f_aging, f_fstorder, f_death],
+      I = [i_birth, i_fstorder, i_aging, i_fstorder, i_aging, i_fstorder],
       O = [o_fstorder, o_death, o_aging, o_fstorder, o_death, o_aging, o_fstorder, o_death],
       V = [v_birth, v_death, v_fstorder, v_aging, v_death, v_fstorder, v_aging, v_death, v_fstorder],
       LV = [lv_death1, lv_fstorder1, lv_aging1, lv_death1, lv_fstorder1, lv_aging1, lv_death1, lv_fstorder1],
@@ -174,63 +172,63 @@ using Catlab.CategoricalAlgebra
       Name =NothingFunction, Op=NothingFunction, Position=NothingFunction
     );
     @assert is_natural(typed_ageWeightModel);
-    
+
     aged_weight = pullback(typed_WeightModel, typed_ageWeightModel) |> apex |> rebuildStratifiedModelByFlattenSymbols;
-    
+
     # #########################################
-    
-    age_weight_2 = @stratify WeightModel l_type ageWeightModel begin 
+
+    age_weight_2 = @stratify WeightModel l_type ageWeightModel begin
         :stocks
         NormalWeight, OverWeight, Obese => pop <= Child, Adult, Senior
-    
+
         :flows
         f_NewBorn => f_birth <= f_NB
         f_DeathNormalWeight, f_DeathOverWeight, f_DeathObese => f_death <= f_DeathC, f_DeathA, f_DeathS
         f_idNW, f_idOW, f_idOb => f_aging <= f_agingCA, f_agingAS
         f_BecomingOverWeight, f_BecomingObese => f_fstOrder <= f_idC, f_idA, f_idS
-    
+
         :dynamic_variables
         v_NewBorn => v_birth <= v_NB
         v_DeathNormalWeight, v_DeathOverWeight, v_DeathObese => v_death <= v_DeathC, v_DeathA, v_DeathS
         v_idNW, v_idOW, v_idOb  => v_aging <= v_agingCA, v_agingAS
         v_BecomingOverWeight, v_BecomingObese => v_fstOrder <= v_idC, v_idA, v_idS
-    
+
         :parameters
         μ => μ <= μ
         δw, δo => δ <= δC, δA, δS
         rw, ro => rFstOrder <= r
         rage => rage <= rageCA, rageAS
-    
+
         :sums
         N => N <= N
-        
+
     end
     #########################################
-    
+
     age_weight_3 =  @stratify WeightModel l_type ageWeightModel begin
-    
+
         :flows
         f_NewBorn => f_birth <= f_NB
         ~Death => f_death <= ~Death
         ~id => f_aging <= ~aging
         ~Becoming => f_fstOrder <= ~id
-    
+
         :dynamic_variables
         v_NewBorn => v_birth <= v_NB
         ~Death => v_death <= ~Death
         ~id  => v_aging <= ~aging
         ~Becoming => v_fstOrder <= ~id
-    
+
         :parameters
         μ => μ <= μ
         ~δ => δ <= ~δ
         rage => rage <= rageCA, rageAS
         _ => rFstOrder <= _
-    
-    end 
-    
+
+    end
+
     age_weight_4 =  @stratify WeightModel l_type ageWeightModel begin
-    
+
         :flows
         ~NO_MATCHES => f_birth <= ~NO_MATCHES
         f_NewBorn => f_birth <= f_NB
@@ -239,44 +237,44 @@ using Catlab.CategoricalAlgebra
         ~Becoming => f_fstOrder <= ~id
         ~Becoming => f_aging <= ~id # Everything already matched; ignored
         _ => f_aging <= _ # also ignored
-    
+
         :dynamic_variables
         v_NewBorn => v_birth <= v_NB
         ~Death => v_death <= ~Death
         ~id  => v_aging <= ~aging
         _ => v_fstOrder <= _
-    
+
         :parameters
         μ => μ <= μ
         ~δ => δ <= ~δ
         rage => rage <= rageCA, rageAS
         _ => rFstOrder <= _
-    
+
     end
 
     age_weight_5 = @n_stratify WeightModel ageWeightModel l_type begin
         :stocks
         [_, _] => pop
-        
+
         :flows
         [~Death, ~Death] => f_death
-        [~id, ~aging] => f_aging 
+        [~id, ~aging] => f_aging
         [~Becoming, ~id] => f_fstOrder
         [_, f_NB] => f_birth
-    
-        
+
+
         :dynamic_variables
         [v_NewBorn, v_NB] => v_birth
         [~Death, ~Death] => v_death
         [~id, (v_agingCA, v_agingAS)] => v_aging
         [(v_BecomingOverWeight, v_BecomingObese), (v_idC, v_idA, v_idS)] => v_fstOrder
-        
+
         :parameters
         [μ, μ] => μ
         [(δw, δo), (δC, δA, δS)] => δ
         [(rw, ro), r] => rFstOrder
         [rage, (rageCA, rageAS)] => rage
-        
+
         :sums
         [N,N] => N
     end
@@ -285,17 +283,17 @@ using Catlab.CategoricalAlgebra
 
         :flows
         [~Death, ~Death] => f_death
-        [~id, ~aging] => f_aging 
+        [~id, ~aging] => f_aging
         [~Becoming, ~id] => f_fstOrder
         [_, f_NB] => f_birth
-    
-        
+
+
         :dynamic_variables
         [v_NewBorn, v_NB] => v_birth
         [~Death, ~Death] => v_death
         [~id, (v_agingCA, v_agingAS)] => v_aging
         [(v_BecomingOverWeight, v_BecomingObese), (v_idC, v_idA, v_idS)] => v_fstOrder
-        
+
         :parameters
         [μ, μ] => μ
         [(δw, δo), (δC, δA, δS)] => δ
@@ -319,7 +317,7 @@ end
 
 
     @test interpret_stratification_standard_notation(:(A => B <= C)) == [[DSLArgument(:A, :B, Set{Symbol}())], [DSLArgument(:C, :B, Set{Symbol}())]]
-    
+
     @test interpret_stratification_standard_notation(:(A1, A2 => B <= C)) == [
         [DSLArgument(:A1, :B, Set{Symbol}()), DSLArgument(:A2, :B, Set{Symbol}())],
         [DSLArgument(:C, :B, Set{Symbol}())]
@@ -363,7 +361,7 @@ end
     t1 = Dict(:B => 2)
     m1₁ = [DSLArgument(:A, :B, Set{Symbol}())]
     m1₂ = [DSLArgument(:A, :B, Set{Symbol}([:~]))]
- 
+
     @test substitute_symbols(s1, t1, m1₁) == Dict(1 => 2) # A=>B -> 1=>2
     @test substitute_symbols(s1, t1, m1₂) == Dict(1 => 2) # A=>B -> 1=>2
     @test substitute_symbols(s1, t1, m1₂, use_flags=false) == Dict(1 => 2) # A=>B -> 1=>2
@@ -427,7 +425,7 @@ end
     end))
 
     # doesn't show up anywhere, so doesn't affect anything.  Could also set it to something untypable in the DSL, like Symbol("")
-    @test (sfstratify([A_, B_], X_, strat_AXB, temp_strat_default=:ABABABABA) 
+    @test (sfstratify([A_, B_], X_, strat_AXB, temp_strat_default=:ABABABABA)
     == (@stock_and_flow begin
         :stocks
         AB
@@ -458,55 +456,55 @@ end
 @testset "n_stratify works as expected" begin
 
 
-    l_type = @stock_and_flow begin 
+    l_type = @stock_and_flow begin
         :stocks
         pop
-        
+
         :parameters
         μ
         δ
         rFstOrder
         rage
-        
+
         :dynamic_variables
         v_aging = pop * rage
         v_fstOrder = pop * rFstOrder
         v_birth = N * μ
         v_death = pop * δ
-        
+
         :flows
         pop => f_aging(v_aging) => pop
         pop => f_fstOrder(v_fstOrder) => pop
         CLOUD => f_birth(v_birth) => pop
         pop => f_death(v_death) => CLOUD
-        
+
         :sums
         N = [pop]
-        
+
     end
 
     chain_ltype = @stock_and_flow begin
         :stocks
         poppoppop
-    
+
         :parameters
         μμμ
         δδδ
         rFstOrderrFstOrderrFstOrder
         rageragerage
-    
+
         :dynamic_variables
         v_agingv_agingv_aging = poppoppop * rageragerage
         v_fstOrderv_fstOrderv_fstOrder = poppoppop * rFstOrderrFstOrderrFstOrder
         v_birthv_birthv_birth = NNN * μμμ
         v_deathv_deathv_death = poppoppop * δδδ
-    
+
         :flows
         poppoppop => f_agingf_agingf_aging(v_agingv_agingv_aging) => poppoppop
         poppoppop => f_fstOrderf_fstOrderf_fstOrder(v_fstOrderv_fstOrderv_fstOrder) => poppoppop
         CLOUD => f_birthf_birthf_birth(v_birthv_birthv_birth) => poppoppop
         poppoppop => f_deathf_deathf_death(v_deathv_deathv_death) => CLOUD
-    
+
         :sums
         NNN = [poppoppop]
     end
@@ -515,30 +513,30 @@ end
 
         :stocks
         [pop, ~pop, _] => pop
-        
+
         :parameters
         [μ, μ, μ] => μ
         [δ, δ, δ] => δ
         [rFstOrder, rFstOrder, rFstOrder] => rFstOrder
         [rage, rage, rage] => rage
-        
+
         :dynamic_variables
         [v_aging, v_aging, v_aging] => v_aging
         [v_fstOrder, v_fstOrder, v_fstOrder] => v_fstOrder
         [v_birth, v_birth, v_birth] => v_birth
         [v_death, v_death, v_death] => v_death
-        
+
         :flows
         [f_aging, f_aging, f_aging] => f_aging
         [f_fstOrder, f_fstOrder, f_fstOrder] => f_fstOrder
         [f_birth, f_birth, f_birth] => f_birth
         [f_death, f_death, f_death] => f_death
-        
+
         :sums
         [N, N, N] => N
     end
 
-    
+
     @test chain_ltype == chain_ltype_nstratify
 
 
@@ -546,34 +544,30 @@ end
 
         :stocks
         [pop] => pop
-        
+
         :parameters
         [μ] => μ
         [δ] => δ
         [rFstOrder] => rFstOrder
         [rage] => rage
-        
+
         :dynamic_variables
         [v_aging] => v_aging
         [v_fstOrder] => v_fstOrder
         [v_birth] => v_birth
         [v_death] => v_death
-        
+
         :flows
         [f_aging] => f_aging
         [f_fstOrder] => f_fstOrder
         [f_birth] => f_birth
         [f_death] => f_death
-        
+
         :sums
         [N] => N
     end
 
     @test ltype_nstratify == l_type
-        
-    
+
+
 end
-
-
-
-

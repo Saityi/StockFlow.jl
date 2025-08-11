@@ -5,16 +5,16 @@ using ...StockFlow
 using ..Syntax
 using MLStyle
 import Base: get
-using Catlab.CategoricalAlgebra
+using Catlab
 import ..Syntax: infer_links, substitute_symbols, DSLArgument, NothingFunction, invert_vector
 
 
 
 struct SFNames
 
-    sf::AbstractStockAndFlowF 
+    sf::AbstractStockAndFlowF
 
-    snames::Vector{Symbol} 
+    snames::Vector{Symbol}
     svnames::Vector{Symbol}
     vnames::Vector{Symbol}
     fnames::Vector{Symbol}
@@ -114,7 +114,7 @@ function interpret_stratification_standard_notation(mapping_pair::Expr)::Vector{
                 _ => "Unknown format found for match; middle three values formatted incorrectly."
             end
         end
-        _ => error("Unknown line format found in stratification notation.") 
+        _ => error("Unknown line format found in stratification notation.")
     end
 end
 
@@ -141,7 +141,7 @@ function read_stratification_line_and_update_dictionaries!(line::Expr, other_nam
         interpret_stratification_notation_function = interpret_stratification_generalized_notation
 
         # need to do this here, since we know the number of other_mappings at this point, but not in the interpret_stratification_notation
-        @assert length(line.args) == 3 
+        @assert length(line.args) == 3
         @assert typeof(line.args[3]) == Symbol
         @assert line.args[1] == :(=>)
         @assert length(line.args[2].args) == length(other_names)
@@ -150,7 +150,7 @@ function read_stratification_line_and_update_dictionaries!(line::Expr, other_nam
         # In the future, if we have additional flags, may need to check for them as well.
         # These asserts are a bit sloppy
     end
-    
+
     current_symbol_dict::Vector{Vector{DSLArgument}} = interpret_stratification_notation_function(line)
 
     current_mapping_dict::Vector{Dict{Int, Int}} = ((x, y) -> substitute_symbols(x,type_names, y; use_flags=use_flags)).(other_names, current_symbol_dict)
@@ -177,7 +177,7 @@ end
 Iterates over each line in a stratification syntax block and updates the appropriate dictionaries.
 """
 function iterate_over_stratification_lines!(block, other_names::Vector{SFNames}, type_names::SFNames; use_standard_stratification_syntax=true, strict_matches=false, use_flags=true)
-    
+
     current_phase = (_, _) -> ()
     for statement in block.args
         @match statement begin
@@ -186,13 +186,13 @@ function iterate_over_stratification_lines!(block, other_names::Vector{SFNames},
             end
             QuoteNode(:sums) => begin
                 current_phase = sv -> read_stratification_line_and_update_dictionaries!(sv, (getfield.(other_names, :sv))::Vector{Dict{Symbol, Int}}, type_names.sv, (getfield.(other_names, :msv))::Vector{Dict{Int, Int}}; use_standard_stratification_syntax=use_standard_stratification_syntax, strict_matches=strict_matches, use_flags=use_flags)
-            end        
+            end
             QuoteNode(:dynamic_variables) => begin
                 current_phase = v -> read_stratification_line_and_update_dictionaries!(v, (getfield.(other_names, :v))::Vector{Dict{Symbol, Int}}, type_names.v, (getfield.(other_names, :mv))::Vector{Dict{Int, Int}}; use_standard_stratification_syntax=use_standard_stratification_syntax, strict_matches=strict_matches, use_flags=use_flags)
-            end       
+            end
             QuoteNode(:flows) => begin
                 current_phase = f -> read_stratification_line_and_update_dictionaries!(f, (getfield.(other_names, :f))::Vector{Dict{Symbol, Int}}, type_names.f, (getfield.(other_names, :mf))::Vector{Dict{Int, Int}}; use_standard_stratification_syntax=use_standard_stratification_syntax, strict_matches=strict_matches, use_flags=use_flags)
-            end                    
+            end
             QuoteNode(:parameters) => begin
                 current_phase = p -> read_stratification_line_and_update_dictionaries!(p, (getfield.(other_names, :p))::Vector{Dict{Symbol, Int}}, type_names.p, (getfield.(other_names, :mp))::Vector{Dict{Int, Int}}; use_standard_stratification_syntax=use_standard_stratification_syntax, strict_matches=strict_matches, use_flags=use_flags)
             end
@@ -295,20 +295,20 @@ function sfstratify(others::Vector{K}, type::K, block::Expr ; use_standard_strat
 
     # This bit makes debugging when making a stratification easier.  Tells you exactly which ones you forgot to map.
 
-    #unmapped: 
+    #unmapped:
     if !(all(is_all_mapped.(other_names)))
         for i ∈ eachindex(other_names)
             print_unmapped(other_names[i], "STOCKFLOW $i")
         end
         error("There is an unmapped value!")
     end
-    
+
 
     # STEP 5
     # NothingFunction(x...) = nothing;
     no_attribute_type = map(type, Name=NothingFunction, Op=NothingFunction, Position=NothingFunction)
 
-    # STEP 6/7 
+    # STEP 6/7
     # This is where we pull out the magic to infer links.
     #
     #  A <- C -> B
@@ -323,10 +323,10 @@ function sfstratify(others::Vector{K}, type::K, block::Expr ; use_standard_strat
     #  v    v    v
     #  A'<- C'-> B'
     #
-    
+
     generate_all_mappings_function = m -> Dict(infer_links(m.sf, type, get_mappings_infer_links_format(m))..., get_mappings_infer_links_format(m)..., :Op => NothingFunction, :Position => NothingFunction, :Name => NothingFunction)
     all_mappings = generate_all_mappings_function.(other_names)
-   
+
     all_transformations = [ACSetTransformation(sfn.sf, no_attribute_type ; mappings...) for (sfn, mappings) ∈ zip(other_names, all_mappings)]
 
     # STEP 8
@@ -338,7 +338,7 @@ function sfstratify(others::Vector{K}, type::K, block::Expr ; use_standard_strat
     else
         return pullback_model
     end
-    
+
 end
 
 """
@@ -354,30 +354,30 @@ If the type model has a single object in a category, the mapping to it is automa
 @stratify WeightModel l_type ageWeightModel begin
     :stocks
     _ => pop <= _
-    
+
     :flows
     ~Death => f_death <= ~Death
     ~id => f_aging <= ~aging
     ~Becoming => f_fstOrder <= ~id
     _ => f_birth <= f_NB
 
-    
+
     :dynamic_variables
     v_NewBorn => v_birth <= v_NB
     ~Death => v_death <= ~Death
     ~id  => v_aging <= v_agingCA, v_agingAS
     v_BecomingOverWeight, v_BecomingObese => v_fstOrder <= v_idC, v_idA, v_idS
-    
+
     :parameters
     μ => μ <= μ
     δw, δo => δ <= δC, δA, δS
     rw, ro => rFstOrder <= r
     rage => rage <= rageCA, rageAS
-    
+
     :sums
     N => N <= N
-    
-end 
+
+end
 ```
 """
 macro stratify(strata, type, aggregate, block)
@@ -397,26 +397,26 @@ Second last argument must be the type stockflow, last must be the block describi
 @n_stratify WeightModel ageWeightModel l_type begin
     :stocks
     [_, _] => pop
-    
+
     :flows
     [~Death, ~Death] => f_death
-    [~id, ~aging] => f_aging 
+    [~id, ~aging] => f_aging
     [~Becoming, ~id] => f_fstOrder
     [_, f_NB] => f_birth
 
-    
+
     :dynamic_variables
     [v_NewBorn, v_NB] => v_birth
     [~Death, ~Death] => v_death
     [~id, (v_agingCA, v_agingAS)] => v_aging
     [(v_BecomingOverWeight, v_BecomingObese), (v_idC, v_idA, v_idS)] => v_fstOrder
-    
+
     :parameters
     [μ, μ] => μ
     [(δw, δo), (δC, δA, δS)] => δ
     [(rw, ro), r] => rFstOrder
     [rage, (rageCA, rageAS)] => rage
-    
+
     :sums
     [N,N] => N
 end
