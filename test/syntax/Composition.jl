@@ -2,7 +2,7 @@ using StockFlow
 using StockFlow.Syntax
 using StockFlow.Syntax.Composition
 import StockFlow.Syntax.Composition: interpret_composition_notation
-using Catlab.CategoricalAlgebra
+using Catlab
 
 function ≅(x,y)
   !isnothing(isomorphism(x,y))
@@ -12,10 +12,10 @@ end
     empty_sf = StockAndFlowF()
     A = @stock_and_flow begin; :stocks; A; end;
     AA = @stock_and_flow begin; :stocks; A; A; end;
-    
+
     B = @stock_and_flow begin; :stocks; B; end;
-    AB = @stock_and_flow begin :stocks; A; B; end; 
-    BA = @stock_and_flow begin :stocks; B; A; end; 
+    AB = @stock_and_flow begin :stocks; A; B; end;
+    BA = @stock_and_flow begin :stocks; B; A; end;
 
     @test (@compose empty_sf begin
         (sf,)
@@ -84,7 +84,7 @@ end
             :sums
             N = [A, B, C]
         end))
-        
+
 
 
 end
@@ -126,7 +126,7 @@ end
 
 @testset "Causal Loop composition" begin
     CL1 = @cl B => +A, B => +C, C => +A, G;
-    CL2 = @cl B => +A, A => +D, D => -E;       
+    CL2 = @cl B => +A, A => +D, D => -E;
     CL3 = @cl B => +C, C => -F, F => +E, E => + B, G;
 
     BigCL = @causal_loop begin
@@ -167,7 +167,7 @@ end
     ABC = (@cl A => B, B => C)
     BCD = (@cl B => C, C => D)
     ABCD = (@cl A => B, B => C, C => D)
-    
+
     @test (@compose ABC BCD begin
         (bc, cd)
         (bc, cd) ^ B => C
@@ -177,7 +177,7 @@ end
         (abc1, abc2)
         (abc1, abc2) ^ A => B, B => C
     end) == ABC
-    
-      
+
+
 
 end
