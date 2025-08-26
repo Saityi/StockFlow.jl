@@ -3,11 +3,9 @@ export sfcompose, @compose
 
 using ...StockFlow
 using ..Syntax
-using Catlab.CategoricalAlgebra
-using Catlab.WiringDiagrams
+using Catlab
 
 import ..Syntax: create_foot
-import Catlab.Programs.RelationalPrograms: UntypedUnnamedRelationDiagram
 
 using MLStyle
 
@@ -22,7 +20,7 @@ function create_uwd(;
     Junction::Vector{Symbol} = Vector{Symbol}() # A symbol for each (unique) foot
     )
 
-    uwd = UntypedUnnamedRelationDiagram{Symbol, Symbol}(0)
+    uwd = UntypedRelationDiagram{Symbol, Symbol}(0)
     add_parts!(uwd, :Box, length(Box), name=Box)
     add_parts!(uwd, :Junction, length(Junction), variable=Junction)
     add_parts!(uwd, :Port, length(Port), box=map(first, Port), junction=map(last, Port))
@@ -73,7 +71,7 @@ sirv = sfcompose(sir, svi, quote
     (sr, sv) ^ S => N, I => N
 end)
 
-Cannot use () => () as a foot, 
+Cannot use () => () as a foot,
 the length of the first tuple must be the same as the number of stock flows
 given as argument, and every foot can only be used once.
 """
@@ -90,8 +88,8 @@ function sfcompose(sfs::Vector, block::Expr, main_type, foot_type, create_foot_f
     else
         sf_names = block.args[1].args
     end
-  
-    # If the tuple of aliases is smaller than 
+
+    # If the tuple of aliases is smaller than
     if length(sf_names) < length(sfs)
         len_diff = length(sfs) - length(sf_names)
         append!(sf_names, [gensym() for _ in 1:len_diff])
@@ -106,7 +104,7 @@ function sfcompose(sfs::Vector, block::Expr, main_type, foot_type, create_foot_f
 
     # symbol representation of sf => (sf itself, sf's feet)
     # Every sf has empty foot as first foot to get around being unable to create OpenStockAndFlowF without feet
-    sf_map::Dict{Symbol, Tuple{main_type, Vector{foot_type}}} = 
+    sf_map::Dict{Symbol, Tuple{main_type, Vector{foot_type}}} =
         Dict(sf_names[i] => (sfs[i], [empty_foot]) for i ∈ eachindex(sf_names)) # map the symbols to their corresponding stockflows
 
     # all feet
@@ -128,7 +126,7 @@ function sfcompose(sfs::Vector, block::Expr, main_type, foot_type, create_foot_f
 
     Port = Vector{Tuple{Int, Int}}()
 
-    # for each (alias, (sf, sf's feet)) 
+    # for each (alias, (sf, sf's feet))
     #   for each foot in sf's feet
     #       grab the index of a foot
     #       grab the index of alias

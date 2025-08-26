@@ -2,11 +2,10 @@ using StockFlow
 using StockFlow.Syntax
 using StockFlow.PremadeModels
 
-using Catlab.CategoricalAlgebra    
-
+using Catlab
 
 @testset "Empty CausalLoop" begin
-    
+
     e = CausalLoop() # Graph with names
     @test (nvert(e) == 0
            && nedges(e) == 0)
@@ -29,7 +28,7 @@ end
 
 
 @testset "sf to causal loop" begin
-    @test (convertToCausalLoop(seir()) 
+    @test (convertToCausalLoop(seir())
            == (@causal_loop begin
             :nodes
             S; E; I; R; f_birth; f_incid; f_deathS; f_inf; f_deathE; f_rec; f_deathI; f_deathR; N; NI; NS; v_prevalence; v_meanInfectiousContactsPerS; v_perSIncidenceRate; μ; β; tlatent; trecovery; δ; c;
@@ -43,15 +42,15 @@ end
              I => NS
              R => N
              R => NS
-             
+
              NI => v_prevalence
              NS => v_prevalence
              N => f_birth
-             
+
              S => f_incid
              E => f_inf
              I => f_rec
-             
+
              S => f_deathS
              E => f_deathE
              I => f_deathI
@@ -60,14 +59,14 @@ end
              f_incid => E
              f_inf => I
              f_rec => R
-             f_incid => S 
+             f_incid => S
              f_deathS => S
              f_inf => E
              f_deathE => E
              f_rec => I
              f_deathI => I
              f_deathR => R
- 
+
              c => v_meanInfectiousContactsPerS
              β => v_perSIncidenceRate
              μ => f_birth
@@ -77,12 +76,12 @@ end
              δ => f_deathE
              δ => f_deathI
              δ => f_deathR
-             
+
              v_prevalence => v_meanInfectiousContactsPerS
              v_meanInfectiousContactsPerS => v_perSIncidenceRate
              v_perSIncidenceRate => f_incid
- 
-         
+
+
             end)
 
           )
@@ -106,7 +105,7 @@ end
                C => -A
            end)
     cl3 = CausalLoopPM([:A,:B,:C,:D], [:A => :B, :B => :C, :C => :A], [POL_POSITIVE, POL_NEGATIVE, POL_NEGATIVE])
-    
+
     @test cl1 == cl2
     @test cl2 == cl3
     @test cl3 == cl1
@@ -118,17 +117,17 @@ end
 
 @testset "Cycles" begin
     clc = (@cl A => +B, A => -B, B => -B, B => -A)
-    
+
     @test cl_cycles(CausalLoopPM()) == Vector{Vector{Int}}()
     @test cl_cycles(clc) == [[1, 4], [2, 4], [3]]
 
     cl = (@cl A => +B, C => -D, D => -C, E => +E)
-    
+
     # Unfortunately, this is pretty non-indicative of what they actually are.
     # Edges are ordered first by pos > neg > zero > nwd > unknown, then by order in which they appear.
     # So, the order of edges here is A => +B == 1, E => +E == 2, C => -D == 3,
     # D => -C == 4
-    @test cl_cycles(cl) == [[3,4], [2]] 
+    @test cl_cycles(cl) == [[3,4], [2]]
 
     @test extract_loops(CausalLoopPM()) == Dict{Vector{Int}, Polarity}()
     @test extract_loops(clc) == Dict([[1,4] => POL_NEGATIVE, [2, 4] => POL_POSITIVE, [3] => POL_NEGATIVE])
@@ -146,7 +145,7 @@ end
     @test !is_circuit((@cl A => +B), [2])
 
     @test walk_polarity(CausalLoopPM(), Vector{Int}()) == POL_POSITIVE
-    @test walk_polarity((@cl A => -B), [1]) == POL_NEGATIVE 
+    @test walk_polarity((@cl A => -B), [1]) == POL_NEGATIVE
     @test walk_polarity((@cl A => -B, B => -A), [1,2]) == POL_POSITIVE
     @test walk_polarity((@cl A => -B, B => -A), [1,2,1]) == POL_NEGATIVE
 end
@@ -180,9 +179,9 @@ end
     @test num_inputs_outputs(@cl A) == Dict([:A => (0, 0)])
     @test num_inputs_outputs(@cl A => +B, B => +C, C => -D) == Dict([:A => (0, 1), :B => (1, 1), :C => (1, 1), :D => (1, 0)])
 
-    @test (num_inputs_outputs_pols(@cl A => +B, A => -C, A => +D, A => -E, A => -B) == 
+    @test (num_inputs_outputs_pols(@cl A => +B, A => -C, A => +D, A => -E, A => -B) ==
     Dict([:A => (0, 2, 0, 3), :B => (1, 0, 1, 0),
-     :C => (0, 0, 1, 0), :D => (1, 0, 0, 0), :E => (0, 0, 1, 0)    
+     :C => (0, 0, 1, 0), :D => (1, 0, 0, 0), :E => (0, 0, 1, 0)
     ]))
 
 end
@@ -220,7 +219,7 @@ end
              [vvi,  vvi,    vve]])
         ))
 
-        @test (all_shortest_paths(@cl A => B, B => C, C => A, D) 
+        @test (all_shortest_paths(@cl A => B, B => C, C => A, D)
         == permutedims(stack(
             [
                 [vve, [[1]], [[1,2]], vvi],
@@ -240,7 +239,7 @@ end
                 [[[3]], vve, [[4]]],
                 [[[5]], [[6]], vve]
             ]
- 
+
 
         )))
 
@@ -261,14 +260,14 @@ end
 
 
     @testset "Betweenness" begin
-        
+
         @test betweenness(@cl) == Vector{Float64}()
         @test betweenness(@cl A => B) == [0.0, 0.0]
         @test betweenness(@cl A => B, B => C) == [0.0, 1.0, 0.0]
 
 
         @test betweenness(@cl A => B, A => B, B => C, B => C) == [0.0, 1.0, 0.0]
-        
+
         # Shortest paths of len > 2:
         # A => B => C
         # A => B => C => D
@@ -322,9 +321,7 @@ end
     (:birth=>:v_birth,:inf=>:v_inf,:rec=>:v_rec,:deathS=>:v_deathS),
     (:N=>(:v_birth,:v_inf)))) == (
         @cl S, birth, inf, rec, deathS, N, S => N, N => birth, N => inf, S => inf, S => deathS, birth => S, inf => S, deathS => S
-    )) 
+    ))
 
 
 end
-
-
