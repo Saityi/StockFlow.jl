@@ -4,8 +4,8 @@ on:
   schedule:
     - cron: 0 0 * * *
   push:
-      branches: ["main"]
-      tags: ["*"]
+    branches: ["main"]
+    tags: ["*"]
   pull_request:
   workflow_dispatch:
     inputs:
