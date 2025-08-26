@@ -15,6 +15,9 @@ make_v_expr_nonrecursive, get_lpvpposition, get_lvsrcposition, get_lsvsvposition
 
 
 using Catlab
+using Catlab.CategoricalAlgebra
+#using Catlab.CategoricalAlgebra.FinSets
+using Catlab.Theories
 using LabelledArrays
 using LinearAlgebra: mul!
 import Base.+,Base.-
