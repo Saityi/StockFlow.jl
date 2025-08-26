@@ -331,7 +331,8 @@ function sfstratify(others::Vector{K}, type::K, block::Expr ; use_standard_strat
 
     # STEP 8
 
-    pullback_model = pullback(all_transformations) |> apex |> rebuildStratifiedModelByFlattenSymbols;
+    cat = ACSetCategory(LooseACSetCat(type))
+    pullback_model = pullback(WithModel(cat), all_transformations) |> apex |> rebuildStratifiedModelByFlattenSymbols;
 
     if return_homs
         return pullback_model, all_transformations

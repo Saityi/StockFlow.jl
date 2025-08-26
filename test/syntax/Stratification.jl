@@ -10,6 +10,7 @@ using Catlab
 
 @testset "Pullback computed in standard way is equal to DSL pullbacks" begin
 
+    cat = ACSetCategory(LooseACSetCat(StockAndFlowF()))
 
     l_type = @stock_and_flow begin
         :stocks
@@ -151,9 +152,9 @@ using Catlab
       LSV = [lsv_birth1],
       P = [p_μ, p_δ, p_rfstOrder, p_rfstOrder, p_δ, p_rage],
       LPV = [lpv_birth2, lpv_death2, lpv_fstorder2, lpv_death2, lpv_fstorder2, lpv_death2, lpv_aging2, lpv_aging2, lpv_aging2],
-      Name=NothingFunction, Op=NothingFunction, Position=NothingFunction
+      Name=NothingFunction, Op=NothingFunction, Position=NothingFunction; cat
     );
-    @assert is_natural(typed_WeightModel);
+    @assert is_natural(typed_WeightModel, cat=cat);
 
 
 
@@ -169,11 +170,11 @@ using Catlab
       LSV = [lsv_birth1],
       P = [p_μ, p_δ, p_δ, p_δ, p_rage, p_rage, p_rfstOrder],
       LPV = [lpv_birth2, lpv_death2, lpv_fstorder2, lpv_aging2, lpv_death2, lpv_fstorder2, lpv_aging2, lpv_death2, lpv_fstorder2],
-      Name =NothingFunction, Op=NothingFunction, Position=NothingFunction
+      Name =NothingFunction, Op=NothingFunction, Position=NothingFunction; cat
     );
-    @assert is_natural(typed_ageWeightModel);
+    @assert is_natural(typed_ageWeightModel, cat=cat);
 
-    aged_weight = pullback(typed_WeightModel, typed_ageWeightModel) |> apex |> rebuildStratifiedModelByFlattenSymbols;
+    aged_weight = pullback(WithModel(cat), typed_WeightModel, typed_ageWeightModel) |> apex |> rebuildStratifiedModelByFlattenSymbols;
 
     # #########################################
 
