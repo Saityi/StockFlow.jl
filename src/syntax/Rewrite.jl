@@ -7,7 +7,7 @@ module Rewrite
 using ...StockFlow
 
 using ..Syntax
-import ..Syntax: parse_dyvar, parse_flow, parse_sum, parse_stock, 
+import ..Syntax: parse_dyvar, parse_flow, parse_sum, parse_stock,
 parse_param, sf_to_block, StockAndFlowBlock, stock_and_flow_syntax_to_arguments
 
 
@@ -24,8 +24,8 @@ Convert a stockflow block to a stockflow
 """
 function block_to_sf(block)
   args = stock_and_flow_syntax_to_arguments(block)
-  sf = StockAndFlowF(args.stocks, args.params,  
-    map(kv -> kv.first => StockFlow.Syntax.get(kv.second), args.dyvars), 
+  sf = StockAndFlowF(args.stocks, args.params,
+    map(kv -> kv.first => StockFlow.Syntax.get(kv.second), args.dyvars),
     args.flows, args.sums)
   return sf
 end
@@ -50,7 +50,7 @@ function reset_positions!(sfold, sfnew)
 
 
 
-  
+
   newlv = zip(get_lvs(sfnew), get_lvv(sfnew))
   newlsv = zip(get_lsvsv(sfnew), get_lsvv(sfnew))
   newlvv = zip(get_lvsrc(sfnew), get_lvtgt(sfnew))
@@ -71,8 +71,8 @@ function reset_positions!(sfold, sfnew)
   used_lsvsv = Set{Tuple{Int, Int}}()
   used_lvsrc = Set{Tuple{Int, Int}}()
   used_lpvp = Set{Tuple{Int, Int}}()
-  
-  
+
+
   #2: iterate over all new values, find what they link to in new, use that to find the corresponding symbol in old
 
 
@@ -82,8 +82,8 @@ function reset_positions!(sfold, sfnew)
   restored_lvsrcposition = subpart(sfnew, :lvsrcposition)
   restored_lpvpposition = subpart(sfnew, :lpvpposition)
 
-  
-  
+
+
   for (lv, (lvs, lvv)) ∈ enumerate(newlv)
     n1 = newsnames[lvs]
     n2 = newvnames[lvv]
@@ -100,7 +100,7 @@ function reset_positions!(sfold, sfnew)
     restored_lvsposition[lv] = old_pos
   end
 
-    
+
   for (lsv, (lsvsv, lsvv)) ∈ enumerate(newlsv)
     n1 = newsvnames[lsvsv]
     n2 = newvnames[lsvv]
@@ -117,7 +117,7 @@ function reset_positions!(sfold, sfnew)
     restored_lsvsvposition[lsv] = old_pos
   end
 
-  
+
   for (lvv, (lvsrc, lvtgt)) ∈ enumerate(newlvv)
        n1 = newvnames[lvsrc]
     n2 = newvnames[lvtgt]
@@ -220,12 +220,12 @@ function recursively_add_dyvars_L!(current_dyvar, sf_block, new_block, new_set, 
   dyvar_name = current_dyvar[1]
   dyvar_copy = deepcopy(current_dyvar)
   dyvar_definition = dyvar_copy[2]
-    
+
   if dyvar_name ∉ new_set
     push!(new_block.dyvars, dyvar_copy)
     push!(new_set, dyvar_name => dyvar_copy)
   end
-    
+
   # For everything not yet in the dict, add to dict
   for object ∈ filter(∉(new_set), dyvar_definition.args[2:end])
     object_type = name_dict[object][1]
@@ -238,17 +238,17 @@ function recursively_add_dyvars_L!(current_dyvar, sf_block, new_block, new_set, 
     if object_type == :V
       recursively_add_dyvars_L!(object_definition, sf_block, new_block, new_set, name_dict)
     end
-    
+
   end
-  
+
 end
-        
-        
+
+
 
 """
 For every dyvar in the original stockflow which contains a link to object_name:
 - If it hasn't been already, add the original dyvar definition to L's dyvars
-- Add all objects which are a part of the dyvar to L. 
+- Add all objects which are a part of the dyvar to L.
   (Deal with recursively adding dyvars at end)
 """
 function remove_from_dyvars!(object_name, sf_block, L_block, L_set, name_dict)
@@ -258,12 +258,12 @@ function remove_from_dyvars!(object_name, sf_block, L_block, L_set, name_dict)
     if object_name ∉ dyvar_expression.args || dyvar_name ∈ L_set
       continue
     end
-  
+
     push!(L_block.dyvars, dyvar)
     push!(L_set, dyvar_name)
     for particular_object ∈ dyvar_expression.args[2:end]
       if particular_object ∉ L_set
-        
+
 
         object_type = name_dict[particular_object][1]
         object_index = name_dict[particular_object][2]
@@ -279,12 +279,12 @@ end
 """
 For every dyvar in the original stockflow which contains a link to src:
 - If it hasn't been already, add the original dyvar definition to L's dyvars
-- Add all objects which are a part of the dyvar to L. 
+- Add all objects which are a part of the dyvar to L.
   (Deal with recursively adding dyvars at end)
 - Create a new dyvar with src replaced with tgt and add to R
 """
 function swap_from_dyvars!(src, tgt, sf_block, L_block, L_set, R_block, R_dict, name_dict)
-  # check every dyvar to see if it contains src 
+  # check every dyvar to see if it contains src
   for dyvar ∈ sf_block.dyvars
     dyvar_name = dyvar[1]
     dyvar_expression = dyvar[2]
@@ -294,8 +294,8 @@ function swap_from_dyvars!(src, tgt, sf_block, L_block, L_set, R_block, R_dict, 
         push!(L_set, dyvar_name)
         for particular_object ∈ dyvar_expression.args[2:end]
           if particular_object ∉ L_set
-            
-            
+
+
             object_type = name_dict[particular_object][1]
             object_index = name_dict[particular_object][2]
             object_definition = get_from_correct_vector(sf_block, object_index, object_type)
@@ -344,7 +344,7 @@ function recursively_add_dyvars_R!(current_dyvar, sf_block, new_block, new_dict,
     object_type = name_dict[object][1]
     object_index = name_dict[object][2]
     object_definition = get_from_correct_vector(sf_block, object_index, object_type)
-    if object_definition isa Symbol  
+    if object_definition isa Symbol
       push!(new_dict, object => (object_definition,))
     else
       push!(new_dict, object => object_definition)
@@ -356,12 +356,12 @@ function recursively_add_dyvars_R!(current_dyvar, sf_block, new_block, new_dict,
     if object_type == :V
       recursively_add_dyvars_R!(object_definition, sf_block, new_block, new_dict, name_dict)
     end
-    
+
   end
-  
+
 end
-        
-        
+
+
 """
 Function call to create a new stockflow,
 using an existing stockflow and a block describing the modifications.
@@ -372,7 +372,7 @@ using an existing stockflow and a block describing the modifications.
 #   @assert allunique(name_vector) "Not all names are unique!  $(filter(x -> count(y -> y == x, name_vector) >= 2, name_vector))"
 
 #   sf_block::StockAndFlowBlock = sf_to_block(sf)
-  
+
 #   L_stocks::Vector{Symbol} = []
 #   L_params::Vector{Symbol} = []
 #   L_dyvars::Vector{Tuple{Symbol,Expr}} = []
@@ -380,7 +380,7 @@ using an existing stockflow and a block describing the modifications.
 #   L_sums::Vector{Tuple{Symbol,Vector{Symbol}}} = []
 
 #   L_block = StockAndFlowBlock(L_stocks, L_params, L_dyvars, L_flows, L_sums)
-  
+
 #   R_stocks::Vector{Symbol} = []
 #   R_params::Vector{Symbol} = []
 #   R_dyvars::Vector{Tuple{Symbol,Expr}} = []
@@ -410,8 +410,8 @@ using an existing stockflow and a block describing the modifications.
 #   # Allows me to update in R repeatedly.
 #   R_dict = Dict{Any, Tuple}()
 
-  
-  
+
+
 #   current_phase = (_, _) -> ()
 #   for statement in block.args
 #     @match statement begin
@@ -425,7 +425,7 @@ using an existing stockflow and a block describing the modifications.
 #             remove_from_sums!(removed, sf_block, L_block, L_set, name_dict)
 #             remove_from_dyvars!(removed, sf_block, L_block, L_set, name_dict)
 #             if name_dict[removed][1] == :F
-#               index = name_dict[removed][2] 
+#               index = name_dict[removed][2]
 #               definition = deepcopy(sf_block.flows[index])
 #               stock1 = definition[1]
 #               if stock1 != :F_NONE && stock1 ∉ L_set && stock1 ∈ keys(name_dict)
@@ -452,7 +452,7 @@ using an existing stockflow and a block describing the modifications.
 #         current_phase = redef -> begin
 #           @match redef begin
 #             Expr(:(=), src, tgt) => begin
-              
+
 
 #               src_type = name_dict[src][1]
 #               src_index = name_dict[src][2]
@@ -469,7 +469,7 @@ using an existing stockflow and a block describing the modifications.
 
 
 #                 push!(modified_dict, src => parse_dyvar(Expr(:(=), src, Expr(:call, equation_operator, intersection_equation_symbols...)))) # wow.
-                
+
 
 #                 if src ∉ keys(R_dict)
 #                   push!(R_dict, src => object_definition)
@@ -480,7 +480,7 @@ using an existing stockflow and a block describing the modifications.
 #                   push!(L_block.dyvars, original_definition)
 
 #                 end
-              
+
 #               elseif src_type == :SV
 #                 object_definition = parse_sum(Expr(:(=), src, tgt))
 #                 original_definition = deepcopy(sf_block.sums[src_index])
@@ -518,7 +518,7 @@ using an existing stockflow and a block describing the modifications.
 
 
 
-#       QuoteNode(:dyvar_swaps) => begin 
+#       QuoteNode(:dyvar_swaps) => begin
 #         current_phase = swap -> begin
 #           @match swap begin
 #             Expr(:call, :(=>), src, tgt) => begin
@@ -527,8 +527,8 @@ using an existing stockflow and a block describing the modifications.
 #           end
 #         end
 #       end
-#       QuoteNode(:stocks) => begin 
-#         current_phase = s -> begin 
+#       QuoteNode(:stocks) => begin
+#         current_phase = s -> begin
 #           @match s begin
 #             val::Symbol => begin # stocks, params
 #               object_definition = parse_stock(val)
@@ -539,9 +539,9 @@ using an existing stockflow and a block describing the modifications.
 #           end
 #         end
 #       end
-      
-#       QuoteNode(:parameters) => begin 
-#         current_phase = p -> begin 
+
+#       QuoteNode(:parameters) => begin
+#         current_phase = p -> begin
 #           @match p begin
 #             val::Symbol => begin # stocks, params
 #               object_definition = parse_param(val)
@@ -552,9 +552,9 @@ using an existing stockflow and a block describing the modifications.
 #           end
 #         end
 #       end
-      
+
 #       QuoteNode(:dynamic_variables) => begin
-#         current_phase = v -> begin 
+#         current_phase = v -> begin
 #           @match v begin
 #             :($tgt = $def) => begin
 #               object_definition = parse_dyvar(v)
@@ -565,9 +565,9 @@ using an existing stockflow and a block describing the modifications.
 #           end
 #         end
 #       end
-      
+
 #       QuoteNode(:flows) => begin
-#         current_phase = f -> begin 
+#         current_phase = f -> begin
 #           @match f begin
 #              Expr(:call, :(=>), S1::Symbol, rest) => begin # flows
 #               object_definition = parse_flow(Expr(:call, :(=>), S1, rest))
@@ -579,9 +579,9 @@ using an existing stockflow and a block describing the modifications.
 #           end
 #         end
 #       end
-      
+
 #       QuoteNode(:sums) => begin
-#         current_phase = sv -> begin 
+#         current_phase = sv -> begin
 #           @match sv begin
 #             Expr(:(=), tgt::Symbol, Expr(:block, def)) => begin
 #               object_definition = parse_sum(Expr(:(=), tgt, def))
@@ -592,7 +592,7 @@ using an existing stockflow and a block describing the modifications.
 #           end
 #         end
 #       end
-      
+
 #       QuoteNode(kw) =>
 #         error("Unknown block type for rewrite syntax: " * String(kw))
 #       _ => current_phase(statement)
@@ -606,7 +606,7 @@ using an existing stockflow and a block describing the modifications.
 #   for current_dyvar ∈ L_block.dyvars
 #     recursively_add_dyvars_L!(current_dyvar, sf_block, L_block, L_set, name_dict)
 #   end
-  
+
 #   for sum ∈ L_block.sums
 #     for stock ∈ sum[2]
 #       if stock ∉ L_set
@@ -641,10 +641,10 @@ using an existing stockflow and a block describing the modifications.
 #       end
 #     end
 #   end
-        
 
 
-  
+
+
 #   I_block = deepcopy(L_block)
 
 
@@ -667,8 +667,8 @@ using an existing stockflow and a block describing the modifications.
 
 #   end
 
-  
-  
+
+
 #   for (i, sum) ∈ enumerate(I_block.sums)
 #     if sum[1] in keys(modified_dict)
 #       I_block.sums[i] = modified_dict[sum[1]]
@@ -730,7 +730,7 @@ using an existing stockflow and a block describing the modifications.
 #   end
 
 
-  
+
 
 #   for current_dyvar ∈ R_block.dyvars
 #     recursively_add_dyvars_R!(current_dyvar, sf_block, R_block, R_dict, name_dict)
@@ -762,14 +762,14 @@ using an existing stockflow and a block describing the modifications.
 #   sort!(R_block.flows, by = x-> get(name_dict, x[2].args[1], mv_array)[2])
 
 
-  
+
 #   L_args = stock_and_flow_syntax_to_arguments(L_block)
 
-  
+
 #   L = StockAndFlowF(L_args.stocks, L_args.params, map(kv -> kv.first => StockFlow.Syntax.get(kv.second), L_args.dyvars), L_args.flows, L_args.sums)
 
 #   I_args = stock_and_flow_syntax_to_arguments(I_block)
-  
+
 
 #   I = StockAndFlowF(I_args.stocks, I_args.params, map(kv -> kv.first => StockFlow.Syntax.get(kv.second), I_args.dyvars), I_args.flows, I_args.sums)
 
@@ -778,7 +778,7 @@ using an existing stockflow and a block describing the modifications.
 
 #   R = StockAndFlowF(R_args.stocks, R_args.params,  map(kv -> kv.first => StockFlow.Syntax.get(kv.second), R_args.dyvars), R_args.flows, R_args.sums)
 
-  
+
 
 
 #   # Now we line the positions up with the original stockflow
@@ -788,7 +788,7 @@ using an existing stockflow and a block describing the modifications.
 #   reset_positions!(sf, L)
 #   reset_positions!(sf, I)
 #   reset_positions!(sf, R)
-  
+
 #   hom = homomorphism
 #   hom1 = hom(I,L)
 #   hom2 = hom(I,R)
@@ -808,7 +808,7 @@ using an existing stockflow and a block describing the modifications.
 #   end
 
 #   return sf_rewritten
-    
+
 # end
 
 
@@ -847,10 +847,10 @@ Use :removes to delete objects.
 
   v_CCContacts = fcc * v_prevalencev_INC
   v_CAContacts = fca * v_prevalencev_INA
-  
+
   v_ACContacts = fac * v_prevalencev_INC
   v_AAContacts = faa * v_prevalencev_INA
-  
+
   v_prevalencev_INC_post = v_CCContacts + v_CAContacts
   v_prevalencev_INA_post = v_ACContacts + v_AAContacts
 
@@ -864,7 +864,7 @@ end
 #     sfrewrite($sf, $escaped_block)
 #   end
 # end
-  
+
 
 
 end
