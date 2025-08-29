@@ -170,7 +170,7 @@ end
 
 @abstract_acset_type AbstractStockAndFlow <: AbstractStockAndFlowStructure
 @acset_type StockAndFlowUntyped(TheoryStockAndFlow, index=[:is,:os,:ifn,:ofn,:fv,:lvs,:lvv,:lsvsv,:lsvv,:lss,:lssv]) <: AbstractStockAndFlow
-const StockAndFlow = StockAndFlowUntyped{Symbol,Any}
+const StockAndFlow = StockAndFlowUntyped{Symbol,Function}
 
 
 """ define the schema of a general stock and flow diagram """
