@@ -930,7 +930,7 @@ end
 
 Open(p::StockAndFlow, feet...) = begin
   legs = map(x->leg(x, p), feet)
-  OpenStockAndFlow{Symbol,T}(p, legs...) where T <: Function
+  OpenStockAndFlow{Symbol,Any}(p, legs...)
 end
 
 Open(p::StockAndFlowF, feet...) = begin
