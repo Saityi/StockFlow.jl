@@ -1,7 +1,6 @@
 #!/usr/bin/env bash
 
-subdir=$1
-find ./examples/$subdir -type f -name "*.ipynb" | while read f; do
+find ./examples -type f -name "*.ipynb" | while read f; do
     fname=$(basename "$f")
     dname=$(dirname "$f" | cut -c13-) # Get directory name; remove ./examples/
      mkdir -p "./jlexamples/$dname"
