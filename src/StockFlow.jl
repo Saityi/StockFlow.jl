@@ -15,6 +15,7 @@ make_v_expr_nonrecursive, get_lpvpposition, get_lvsrcposition, get_lsvsvposition
 
 
 using Catlab
+using LabelledArrays
 
 # fake names for missed part for declaring the components of stock and flow diagrams
 const FK_FLOW_NAME=:F_NONE #fake name of inflows or outflows. e.g., if a stock does not have any inflow or any outflow
