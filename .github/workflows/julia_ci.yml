@@ -42,7 +42,7 @@ jobs:
     secrets: inherit
     with:
       docs: false
-      test_versions: ['1.11', '1.12']
+      test_versions: "['1.11', '1.12']"
   CompatHelper:
     if: github.event_name == 'schedule'
     uses: AlgebraicJulia/.github/.github/workflows/julia_compat.yml@main
