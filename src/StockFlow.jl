@@ -1,23 +1,20 @@
 module StockFlow
 
-export TheoryStockAndFlow0, TheoryStockAndFlow, TheoryStockAndFlowStructure, TheoryStockAndFlowStructureF, TheoryStockAndFlowF, AbstractStockAndFlow0, AbstractStockAndFlow, AbstractStockAndFlowStructure,
-AbstractStockAndFlowStructureF, AbstractStockAndFlowF, StockAndFlow0, StockAndFlow, StockAndFlowStructure, StockAndFlowStructureF, StockAndFlowF, add_flow!, add_flows!, add_stock!, add_stocks!,
+export TheoryStockAndFlow0, TheoryStockAndFlowStructure, TheoryStockAndFlowStructureF, TheoryStockAndFlowF, AbstractStockAndFlow0, AbstractStockAndFlowStructure,
+AbstractStockAndFlowStructureF, AbstractStockAndFlowF, StockAndFlow0, StockAndFlowStructure, StockAndFlowStructureF, StockAndFlowF, add_flow!, add_flows!, add_stock!, add_stocks!,
 add_variable!, add_variables!, add_svariable!, add_svariables!, add_parameter!, add_parameters!, add_VVlink!, add_VVlinks!,
 add_inflow!, add_inflows!, add_outflow!, add_outflows!, add_Vlink!, add_Vlinks!, add_Slink!, add_Slinks!, add_SVlink!, add_Plink!, add_Plinks!,
 add_SVlinks!, ns, nf, ni, no, nvb, nsv, nls, nlv, nlsv, np, nlpv, nlvv, sname, fname, svname, svnames, vname, inflows, outflows,
 funcDynam, flowVariableIndex, funcFlow, funcFlows, funcSV, funcSVs, TransitionMatrices,
 vectorfield, funcFlowsRaw, funcFlowRaw, inflowsAll, outflowsAll,instock,outstock, stockssv, stocksv, svsv, svsstock,
-vsstock, vssv, svsstockAllF, vsstockAllF, vssvAllF, StockAndFlowUntyped, StockAndFlowFUntyped, StockAndFlowStructureUntyped, StockAndFlowStructureFUntyped, StockAndFlowUntyped0, Open, snames, fnames, svnames, vnames,
-object_shift_right, foot, leg, lsnames, OpenStockAndFlow, OpenStockAndFlowOb, fv, fvs, nlvv, nlpv, vtgt, vsrc, vpsrc, vptgt, pname, pnames, make_v_expr,
+vsstock, vssv, svsstockAllF, vsstockAllF, vssvAllF, StockAndFlowStructureUntyped, StockAndFlowStructureFUntyped, StockAndFlowUntyped0, Open, snames, fnames, svnames, vnames,
+object_shift_right, foot, leg, lsnames, fv, fvs, nlvv, nlpv, vtgt, vsrc, vpsrc, vptgt, pname, pnames, make_v_expr,
 vop, lvvposition, lvtgtposition, lsvvposition, lpvvposition, set_snames!, set_fnames!, set_svnames!, set_vnames!, set_pnames!, set_sname!, set_fname!, set_svname!, set_vname!, set_pname!,
 get_lss, get_lssv, get_lsvsv, get_lsvv, get_lvs, get_lvv, get_is, get_ifn, get_os, get_ofn, get_lpvp, get_lpvv, get_lvsrc, get_lvtgt,
 make_v_expr_nonrecursive, get_lpvpposition, get_lvsrcposition, get_lsvsvposition, get_lvsposition, ntcomponent
 
 
 using Catlab
-using LabelledArrays
-using LinearAlgebra: mul!
-import Base.+,Base.-
 
 # fake names for missed part for declaring the components of stock and flow diagrams
 const FK_FLOW_NAME=:F_NONE #fake name of inflows or outflows. e.g., if a stock does not have any inflow or any outflow
@@ -526,7 +523,9 @@ set_snames!(p::AbstractStockAndFlow0, names) = set_subpart!(p, :sname, names)
 set_fnames!(p::AbstractStockAndFlowStructure, names) = set_subpart!(p, :fname, names)
 """ set sum variable names to vector of symbols"""
 set_svnames!(p::AbstractStockAndFlow0, names) = set_subpart!(p, :svname, names)
-""" set dynamic variable names to vector of symbols"""
+""" set dynamic variable names to vector of
+
+symbols"""
 set_vnames!(p::AbstractStockAndFlowStructure, names) = set_subpart!(p, :vname, names)
 """ set parameter names to vector of symbols"""
 set_pnames!(p::AbstractStockAndFlowStructure, names) = set_subpart!(p, :pname, names)
@@ -928,8 +927,6 @@ include("Syntax.jl")
 include("SystemStructure.jl")
 
 include("visualization.jl")
-# The implementations in this file is specific for the Primitive schema of stock and flow diagram in the ACT paper
-# include("PrimitiveStockFlowInPaper.jl")
 
 include("PremadeModels.jl")
 
