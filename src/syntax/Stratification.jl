@@ -1,5 +1,5 @@
 module Stratification
-export sfstratify, @stratify, @n_stratify
+export sfstratify, @stratify #, @n_stratify
 
 using ...StockFlow
 using ..Syntax
